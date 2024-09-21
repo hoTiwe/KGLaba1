@@ -26,7 +26,7 @@
         ///  Required method for Designer support - do not modify
         ///  the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
+        private void InitializeComponentInitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -34,6 +34,8 @@
             this.Text = "Form1";
         }
 
-        #endregion
+#endregion
+        private PictureBox pictureBox1;
+        private System.Windows.Forms.Timer timer1;
     }
 }
