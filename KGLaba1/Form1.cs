@@ -29,9 +29,6 @@ namespace KGLaba1
         {
             base.OnPaint(e);
 
-            //pictureBox1.Width = this.ClientSize.Width;
-            //pictureBox1.Height = this.Size.Height - 90;
-
             bitmap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             graphics = Graphics.FromImage(bitmap);
 
