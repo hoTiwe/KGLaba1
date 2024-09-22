@@ -37,6 +37,7 @@ namespace KGLaba1
             bitmap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             graphics = Graphics.FromImage(bitmap);
 
+            
         }
 
         private void timerStart_Tick(object sender, EventArgs e)
@@ -47,32 +48,39 @@ namespace KGLaba1
 
         private void CircleMove()
         {
-            if (service.countCrash < 2)
+            clearForm();
+
+            points = service.ChangeFigurePosition();
+
+            if (!service.InForm(points))
             {
-                clearForm();
-
-                points = service.ChangeFigurePosition();
-
-                if (!service.InForm(points))
-                {
-                    if (service.countCrash == 1)
-                    {
-                        points = service.ChangeFigurePosition();
-                    }
-                    else
-                    {
-                        clearForm();
-                        return;
-                    }
-                }
-
-                for (int i = 0; i < points.Length; i++)
-                {
-                    graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
-                }
-                
-                graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
+                 points = service.ChangeFigurePosition();
+                    
             }
+
+            int alpha = 255;
+
+            for (int i = 0; i < service.sled.Count(); i++)
+            {
+                CustomPoint[] pointsSled = service.FillCyrcle(service.sled[i]);
+                alpha -= (int)(255 * 0.25);
+                Color color = Color.FromArgb(alpha, Color.Black);
+                for (int j = 0; j < pointsSled.Length; j++)
+                {
+                    graphics.DrawRectangle(new Pen(new SolidBrush(color)), pointsSled[j].x, pointsSled[j].y, 1, 1);
+
+                }
+                graphics.FillEllipse(new SolidBrush(color), service.sled[i].x - service.radius, service.sled[i].y - service.radius, service.radius * 2, service.radius * 2);
+            }
+
+            for (int i = 0; i < points.Length; i++)
+            {
+                graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
+            }
+
+            
+            graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
+           
         }
 
 
@@ -114,6 +122,7 @@ namespace KGLaba1
     {
         private int width;
         private int height;
+        public List<CustomPoint> sled = new List<CustomPoint>();
 
         public CustomPoint center;
         public int radius;
@@ -140,6 +149,9 @@ namespace KGLaba1
 
         private void ChangeCenter()
         {
+            sled.Insert(0, new CustomPoint(center.x, center.y));
+            if (sled.Count() == 5) sled.RemoveAt(4);
+
             // X = X0 + Vx*t
             center.x += stepX;
 
@@ -180,10 +192,7 @@ namespace KGLaba1
 
             return points.ToArray();
         }
-        public int getCenter()
-        {
-            return this.radius;
-        }
+       
         public bool InForm(CustomPoint[] points)
         {
             for (int i = 1; i < points.Length; i++)
@@ -245,6 +254,38 @@ namespace KGLaba1
             center = new CustomPoint(x, y);
         }
 
+        public CustomPoint[] FillCyrcle(CustomPoint point)
+        {
+            List<CustomPoint> points = new List<CustomPoint>(); // один элемент в списке - центр круга
+
+            int x = 0, y = radius, gap = 0, delta = (2 - 2 * radius);
+            while (y >= 0)
+            {
+                points.Add(new CustomPoint(point.x + x, point.y + y));
+                points.Add(new CustomPoint(point.x + x, point.y - y));
+                points.Add(new CustomPoint(point.x - x, point.y - y));
+                points.Add(new CustomPoint(point.x - x, point.y + y));
+
+                gap = 2 * (delta + y) - 1;
+                if (delta < 0 && gap <= 0)
+                {
+                    x++;
+                    delta += 2 * x + 1;
+                    continue;
+                }
+                if (delta > 0 && gap > 0)
+                {
+                    y--;
+                    delta -= 2 * y + 1;
+                    continue;
+                }
+                x++;
+                delta += 2 * (x - y);
+                y--;
+            }
+
+            return points.ToArray();
+        }
     }
     class CustomPoint
     {
