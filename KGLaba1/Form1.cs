@@ -11,23 +11,18 @@ namespace KGLaba1
         Graphics graphics;
         Bitmap bitmap;
 
-        CustomPoint[] points1 = [];
-        CustomPoint[] points2 = [];
-
-        CyrcleService service1;
-        CyrcleService service2;
+        List<CyrcleService> services = new List<CyrcleService>();
+        private bool wasCrash = false;
 
 
         public Form1()
         {
             InitializeComponent();
 
-            service1 = new CyrcleService(pictureBox1.Width, pictureBox1.Height);
-
-           // service2 = new CyrcleService(pictureBox1.Width, pictureBox1.Height);
+            services.Add(new CyrcleService(pictureBox1.Width, pictureBox1.Height, 4));
+            services.Add(new CyrcleService(pictureBox1.Width, pictureBox1.Height, 6));
 
             timer1.Start();
-
         }
 
         private void clearForm()
@@ -54,34 +49,38 @@ namespace KGLaba1
         private void CircleMove()
         {
             clearForm();
-
-            points1 = service1.ChangeFigurePosition();
-            //points2 = service2.ChangeFigurePosition();
-
-            while (!service1.InForm(points1)) { 
-                points1 = service1.ChangeFigurePosition();
-                Console.WriteLine("New");
-
-            }
-            /*
-            while (!service2.InForm(points2))
+            for (int i = 0; i < services.Count; i++)
             {
-                points2 = service2.ChangeFigurePosition();
-            }*/
+                CustomPoint[] points = services[i].ChangeFigurePosition();
 
-            for (int i = 0; i < points1.Length; i++)
-            {
-                graphics.DrawRectangle(new Pen(service1.cyrcleColor), (int)points1[i].x, (int) points1[i].y, 1, 1);
-                
-            }
-            /*
-            for (int i = 0; i < points2.Length; i++)
-            {
-                graphics.DrawRectangle(new Pen(service2.cyrcleColor), (int)points2[i].x, (int)points2[i].y, 1, 1);
-            }
-            */
-            graphics.FillEllipse(new SolidBrush(Color.White), service1.center.x - service1.radius, service1.center.y - service1.radius, service1.radius * 2, service1.radius * 2);
+                while (!services[i].InForm(points))
+                {
+                    points = services[i].ChangeFigurePosition();
+                    
+                    Console.WriteLine("New");
+                }
 
+                bool isCrash = CyrcleService.isCrash(services[0], services[1]);
+
+                if (isCrash)
+                {
+                    if (! wasCrash) CyrcleService.ActionCrash(services[0], services[1]);
+                    wasCrash = isCrash;
+                }
+                else
+                {
+                    wasCrash = false;
+                }
+
+
+                for (int j = 0; j < points.Length; j++)
+                {
+                    graphics.DrawRectangle(new Pen(services[i].cyrcleColor), (int)points[j].x, (int)points[j].y, 1, 1);
+
+                }
+
+                graphics.FillEllipse(new SolidBrush(Color.White), services[i].center.x - services[i].radius, services[i].center.y - services[i].radius, services[i].radius * 2, services[i].radius * 2);
+            }
         }
 
 
@@ -128,20 +127,24 @@ namespace KGLaba1
         public int radius;
 
         private int speed = 5;
-        private int coefX = 1;
+        public int coefX = 1;
         private int coefY = 1;
 
 
         private float N;
         private float M;
 
+        public double vx = 0;
+        public double vy = 0;
+
         public Brush cyrcleColor = Brushes.Green;
         public int countCrash = 0;
 
-        public CyrcleService(int width, int height)
+        public CyrcleService(int width, int height, int speed)
         {
             this.width = width;
             this.height = height;
+            this.speed = speed;
 
             Random r = new Random();
             N = r.Next(100, width - 100);
@@ -153,19 +156,24 @@ namespace KGLaba1
         private void ChangeCenter()
         {
             // X = X0 + Vx*t
-            double gip = Math.Sqrt(N * N + M * M);
+            //double gip = Math.Sqrt(N * N + M * M);
 
-            double cos = Math.Abs( N / gip );
-            Console.WriteLine("Vx " + speed * cos);
-           
-            center.x += (int) Math.Round( coefX * speed * cos, 0);
+            //double cos = Math.Abs( N / gip );
 
-            center.y += (int)Math.Round( coefY * speed * M / gip, 0);
+            center.x += (int)Math.Round(vx, 0);//(int) Math.Round( coefX * speed * cos, 0);
+            center.y += (int)Math.Round(vy, 0);//(int)Math.Round( coefY * speed * M / gip, 0);
         }
 
         public CustomPoint[] ChangeFigurePosition()
         {
             ChangeCenter();
+            
+
+            return GetFillPoints();
+        }
+
+        public CustomPoint[] GetFillPoints()
+        {
             List<CustomPoint> points = new List<CustomPoint>(); // один элемент в списке - центр круга
 
             int x = 0, y = radius, gap = 0, delta = (2 - 2 * radius);
@@ -193,13 +201,9 @@ namespace KGLaba1
                 delta += 2 * (x - y);
                 y--;
             }
-
             return points.ToArray();
         }
-        public int getCenter()
-        {
-            return this.radius;
-        }
+
         public bool InForm(CustomPoint[] points)
         {
             for (int i = 0; i < points.Length; i++)
@@ -209,11 +213,9 @@ namespace KGLaba1
                     // Возвращаем старый центр
                     Random r = new Random();
                     double gip = Math.Sqrt(N * N + M * M);
-
                     double cos = Math.Abs(N / gip);
 
                     center.x -= (int)Math.Round(coefX * speed * cos, 0);
-
                     center.y -= (int)Math.Round(coefY * speed * M / gip, 0);
 
                     if (points[i].x >= width)
@@ -247,21 +249,16 @@ namespace KGLaba1
                         N = (int) r.Next(-1500, 1500);
                         while (N == 0) N = (int) r.Next(-1500, 1500);
 
-                        Console.WriteLine("X " + center.x + " Y: " + center.y);
-                        Console.WriteLine("N " + N);
-
                         M = (float)(center.y / (1f - (center.x / N)));
-                        Console.WriteLine("M " + M);
-
                         coefY *= -1;
                     }
 
-                    Console.WriteLine("N " + N + " M " + M + " step " + speed);
-                    if (M == float.NaN && N == float.NaN)
-                    {
-                        Console.WriteLine("X " + center.x + " Y: " + center.y);
-                        throw new Exception("ffff");
-                    }
+                    gip = Math.Sqrt(N * N + M * M);
+                    cos = Math.Abs( N / gip );
+
+                    vx = coefX * speed * cos;
+                    vy = coefY * speed * M / gip;
+
                     countCrash += 1;
                     return false;
                 }
@@ -284,7 +281,53 @@ namespace KGLaba1
 
             } while (y <= radius || y >= height - radius);
 
+            double gip = Math.Sqrt(N * N + M * M);
+            double cos = Math.Abs(N / gip);
+
+            vx = coefX * speed * cos;
+            vy = coefY * speed * M / gip;
+
             center = new CustomPoint(x, y);
+        }
+
+        public static bool isCrash(CyrcleService cyrcle1, CyrcleService cyrcle2)
+        {
+            List<CustomPoint> points1 = [.. cyrcle1.GetFillPoints()];
+            List<CustomPoint> points2 = [.. cyrcle2.GetFillPoints()];
+
+            for (int i =0; i < points1.Count(); i++)
+            {
+                if (points2.FindIndex(0, points2.Count(), x => x.x == points1[i].x && x.y == points1[i].y) != -1) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static void ActionCrash(CyrcleService cyrcle1, CyrcleService cyrcle2)
+        {
+            double gip1 = Math.Sqrt(cyrcle1.N * cyrcle1.N + cyrcle1.M * cyrcle1.M);
+            double gip2 = Math.Sqrt(cyrcle2.N * cyrcle2.N + cyrcle2.M * cyrcle2.M);
+
+            double cos1 = Math.Abs(cyrcle1.N / gip1);
+            double cos2 = Math.Abs(cyrcle2.N / gip2);
+
+            double vx1 = Math.Round(cyrcle1.coefX * cyrcle1.speed * cos1, 0);
+            double vy1 = Math.Round(cyrcle1.coefY * cyrcle1.speed * cyrcle1.M / gip1, 0);
+
+            double vx2 = Math.Round(cyrcle2.coefX * cyrcle2.speed * cos2, 0);
+            double vy2 = Math.Round(cyrcle2.coefY * cyrcle2.speed * cyrcle2.M / gip2, 0);
+
+            double vx = (vx1*cyrcle1.radius + vx2*cyrcle2.radius) / (cyrcle1.radius + cyrcle2.radius);
+            double vy = (vy1 * cyrcle1.radius + vy2 * cyrcle2.radius) / (cyrcle1.radius + cyrcle2.radius);
+
+            Console.Write("Vx " + vx + " VY " + vy);
+            cyrcle1.vx = cyrcle2.vx = vx;
+            cyrcle1.vy = cyrcle2.vy = vy;
+
+            cyrcle1.ChangeFigurePosition();
+            cyrcle2.ChangeFigurePosition();
+
         }
 
     }
@@ -306,6 +349,10 @@ namespace KGLaba1
 
         public static CustomPoint operator +(CustomPoint v1, CustomPoint v2) => new CustomPoint(v1.x + v2.x, v1.y + v2.y);
         public static CustomPoint operator -(CustomPoint v1, CustomPoint v2) => new CustomPoint(v1.x - v2.x, v1.y - v2.y);
+
+        public static bool operator ==(CustomPoint v1, CustomPoint v2) => v1.x == v2.x && v1.y == v2.y;
+
+        public static bool operator !=(CustomPoint v1, CustomPoint v2) => v1.x != v2.x || v1.y != v2.y;
 
 
     }
