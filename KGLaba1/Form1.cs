@@ -56,8 +56,6 @@ namespace KGLaba1
                 while (!services[i].InForm(points))
                 {
                     points = services[i].ChangeFigurePosition();
-                    
-                    Console.WriteLine("New");
                 }
 
                 bool isCrash = CyrcleService.isCrash(services[0], services[1]);
