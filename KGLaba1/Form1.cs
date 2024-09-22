@@ -80,6 +80,8 @@ namespace KGLaba1
                 graphics.DrawRectangle(new Pen(service2.cyrcleColor), (int)points2[i].x, (int)points2[i].y, 1, 1);
             }
             */
+            graphics.FillEllipse(new SolidBrush(Color.White), service1.center.x - service1.radius, service1.center.y - service1.radius, service1.radius * 2, service1.radius * 2);
+
         }
 
 
@@ -122,8 +124,8 @@ namespace KGLaba1
         private int width;
         private int height;
 
-        private CustomPoint center;
-        private int radius;
+        public CustomPoint center;
+        public int radius;
 
         private int speed = 5;
         private int coefX = 1;
@@ -194,7 +196,10 @@ namespace KGLaba1
 
             return points.ToArray();
         }
-
+        public int getCenter()
+        {
+            return this.radius;
+        }
         public bool InForm(CustomPoint[] points)
         {
             for (int i = 0; i < points.Length; i++)
