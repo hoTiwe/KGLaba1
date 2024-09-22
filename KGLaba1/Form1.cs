@@ -14,7 +14,6 @@ namespace KGLaba1
         CustomPoint[] points = [];
         CyrcleService service;
 
-        Color backColor;
 
         public Form1()
         {
@@ -26,6 +25,12 @@ namespace KGLaba1
 
         }
 
+        private void clearForm()
+        {
+
+            graphics.FillRectangle(Brushes.Tan, 0, 0, pictureBox1.Width, pictureBox1.Height);
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
@@ -33,8 +38,6 @@ namespace KGLaba1
             bitmap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             graphics = Graphics.FromImage(bitmap);
 
-            backColor = pictureBox1.BackColor;
-            //Draw();
         }
 
         private void timerStart_Tick(object sender, EventArgs e)
@@ -45,19 +48,30 @@ namespace KGLaba1
 
         private void CircleMove()
         {
-            for (int i = 0; i < points.Length; i++)
+            if (service.countCrash < 2)
             {
-                graphics.DrawRectangle(new Pen(Brushes.White), points[i].x, points[i].y, 1, 1);
-            }
+                clearForm();
 
-            points = service.ChangeFigurePosition();
+                points = service.ChangeFigurePosition();
 
-            if (!service.InForm(points)) points = service.ChangeFigurePosition();
+                if (!service.InForm(points))
+                {
+                    if (service.countCrash == 1)
+                    {
+                        points = service.ChangeFigurePosition();
+                        service.cyrcleColor = Brushes.Red;
+                    }
+                    else
+                    {
+                        clearForm();
+                        return;
+                    }
+                }
 
-
-            for (int i = 0; i < points.Length; i++)
-            {
-                graphics.DrawRectangle(new Pen(Brushes.Red), points[i].x, points[i].y, 1, 1);
+                for (int i = 0; i < points.Length; i++)
+                {
+                    graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
+                }
             }
         }
 
@@ -72,16 +86,17 @@ namespace KGLaba1
             // 
             // pictureBox1
             // 
+            pictureBox1.BackColor = Color.Tan;
             pictureBox1.Location = new Point(1, 6);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(983, 454);
             pictureBox1.TabIndex = 2;
             pictureBox1.TabStop = false;
-            pictureBox1.Click += pictureBox1_Click_1;
             // 
             // timer1
             // 
-            timer1.Interval = 25;
+            timer1.Enabled = true;
+            timer1.Interval = 10;
             timer1.Tick += timerStart_Tick;
             // 
             // Form1
@@ -93,39 +108,33 @@ namespace KGLaba1
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
         }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void pictureBox1_Click_1(object sender, EventArgs e)
-        {
-
-        }
     }
 
     class CyrcleService
     {
-        private const int speed = 100;
         private int width;
         private int height;
 
         private CustomPoint center;
         private int radius;
 
-        private int stepX = 4;
+        private int stepX = 1;
 
         private float N;
         private float M;
 
+        public Brush cyrcleColor = Brushes.Green;
+        public int countCrash = 0;
+
         public CyrcleService(int width, int height)
         {
-            N = this.width = width;
-            M = this.height = height;
+            this.width = width;
+            this.height = height;
 
-            N = 500;
-            M = 400;
+            Random r = new Random();
+            N = r.Next(100, width - 100);
+            M = r.Next(100, height - 100);
+
             GenerateCyrcle();
         }
 
@@ -135,18 +144,18 @@ namespace KGLaba1
             center.x += stepX;
 
             // y = kx + b
-            center.y = (int)(M * (1 - center.x / N));
+            center.y = (int)(M - M * center.x / N);
         }
 
         public CustomPoint[] ChangeFigurePosition()
         {
             ChangeCenter();
-            List<CustomPoint> points = new List<CustomPoint> { this.center }; // один элемент в списке - центр круга
+            List<CustomPoint> points = new List<CustomPoint>(); // один элемент в списке - центр круга
 
             int x = 0, y = radius, gap = 0, delta = (2 - 2 * radius);
             while (y >= 0)
             {
-                points.Add(new CustomPoint( center.x + x, center.y + y));
+                points.Add(new CustomPoint(center.x + x, center.y + y));
                 points.Add(new CustomPoint(center.x + x, center.y - y));
                 points.Add(new CustomPoint(center.x - x, center.y - y));
                 points.Add(new CustomPoint(center.x - x, center.y + y));
@@ -190,30 +199,25 @@ namespace KGLaba1
                     if (points[i].x <= 0)
                     {
                         stepX *= -1;
-
                         N = r.Next(-1500, 1500);
+                        M = (float)(center.y / (1f - ((float)center.x / N)));
                     }
                     if (points[i].y <= 0)
                     {
                         M = r.Next(-1000, 1000);
-                        if (M <= radius)
-                        {
-                            stepX = Math.Abs(stepX);
-                        }
-                        else
-                        {
-                            stepX = -Math.Abs(stepX);
-                        }
+                        N = (float)(center.x / (1f - ((float)center.y / M)));
+                        stepX = M <= 0 ? Math.Abs(stepX) : -Math.Abs(stepX);
                     }
                     if (points[i].y >= height)
                     {
                         N = r.Next(-1500, 1500);
                         M = (float)(center.y / (1f - ((float)center.x / N)));
                         if (N >= center.x) stepX = Math.Abs(stepX);
-                        else stepX = - Math.Abs(stepX);
+                        else stepX = -Math.Abs(stepX);
                     }
 
                     Console.WriteLine("N " + N + " M " + M + " step " + stepX);
+                    countCrash += 1;
                     return false;
                 }
 
@@ -225,10 +229,15 @@ namespace KGLaba1
         public void GenerateCyrcle()
         {
             Random random = new Random();
-            radius = random.Next(1, 20);
+            radius = random.Next(10, 100);
 
-            int x = random.Next(radius, this.width - radius);
-            int y = (int)(M * (1f - (float)((float) x / (float) N)));
+            int x, y;
+            do
+            {
+                x = random.Next(radius, (int)N);
+                y = (int)(M * (1f - (float)((float)x / (float)N)));
+
+            } while (y <= radius || y >= height - radius);
 
             center = new CustomPoint(x, y);
         }
