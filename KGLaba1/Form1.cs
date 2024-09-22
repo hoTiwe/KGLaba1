@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Runtime.ConstrainedExecution;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 
 namespace KGLaba1
 {
@@ -13,7 +14,7 @@ namespace KGLaba1
         CustomPoint[] points = [];
         CyrcleService service;
 
-        Color backColor;//öâåò ôîíà
+        Color backColor;
 
         public Form1()
         {
@@ -123,6 +124,8 @@ namespace KGLaba1
             N = this.width = width;
             M = this.height = height;
 
+            N = 500;
+            M = 400;
             GenerateCyrcle();
         }
 
@@ -175,8 +178,42 @@ namespace KGLaba1
             {
                 if (points[i].x > width || points[i].x < 0 || points[i].y > height || points[i].y < 0)
                 {
-                    if (points[i].x >= width || points[i].x < 0) stepX *= -1;
+                    Random r = new Random();
 
+                    if (points[i].x >= width)
+                    {
+                        stepX *= -1;
+
+                        M = r.Next(-1000, 1000);
+                        N = (float)(center.x / (1f - ((float)center.y / M)));
+                    }
+                    if (points[i].x <= 0)
+                    {
+                        stepX *= -1;
+
+                        N = r.Next(-1500, 1500);
+                    }
+                    if (points[i].y <= 0)
+                    {
+                        M = r.Next(-1000, 1000);
+                        if (M <= radius)
+                        {
+                            stepX = Math.Abs(stepX);
+                        }
+                        else
+                        {
+                            stepX = -Math.Abs(stepX);
+                        }
+                    }
+                    if (points[i].y >= height)
+                    {
+                        N = r.Next(-1500, 1500);
+                        M = (float)(center.y / (1f - ((float)center.x / N)));
+                        if (N >= center.x) stepX = Math.Abs(stepX);
+                        else stepX = - Math.Abs(stepX);
+                    }
+
+                    Console.WriteLine("N " + N + " M " + M + " step " + stepX);
                     return false;
                 }
 
