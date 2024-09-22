@@ -36,8 +36,7 @@ namespace KGLaba1
 
             bitmap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             graphics = Graphics.FromImage(bitmap);
-
-            
+                        
         }
 
         private void timerStart_Tick(object sender, EventArgs e)
@@ -78,9 +77,7 @@ namespace KGLaba1
                 graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
             }
 
-            
             graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
-           
         }
 
 
