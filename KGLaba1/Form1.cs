@@ -14,7 +14,6 @@ namespace KGLaba1
         CustomPoint[] points = [];
         CyrcleService service;
 
-
         public Form1()
         {
             InitializeComponent();
@@ -71,6 +70,8 @@ namespace KGLaba1
                 {
                     graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
                 }
+                
+                graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
             }
         }
 
@@ -114,8 +115,8 @@ namespace KGLaba1
         private int width;
         private int height;
 
-        private CustomPoint center;
-        private int radius;
+        public CustomPoint center;
+        public int radius;
 
         private int stepX = 1;
 
@@ -179,7 +180,10 @@ namespace KGLaba1
 
             return points.ToArray();
         }
-
+        public int getCenter()
+        {
+            return this.radius;
+        }
         public bool InForm(CustomPoint[] points)
         {
             for (int i = 1; i < points.Length; i++)
