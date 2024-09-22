@@ -63,6 +63,8 @@ namespace KGLaba1
                 if (isCrash)
                 {
                     if (! wasCrash) CyrcleService.ActionCrash(services[0], services[1]);
+                    isCrash = CyrcleService.isCrash(services[0], services[1]);
+
                     wasCrash = isCrash;
                 }
                 else
@@ -318,14 +320,15 @@ namespace KGLaba1
 
             double vx = (vx1*cyrcle1.radius + vx2*cyrcle2.radius) / (cyrcle1.radius + cyrcle2.radius);
             double vy = (vy1 * cyrcle1.radius + vy2 * cyrcle2.radius) / (cyrcle1.radius + cyrcle2.radius);
+            cyrcle1.speed = cyrcle2.speed = (int) Math.Sqrt(vx * vx + vy * vy);
 
             Console.Write("Vx " + vx + " VY " + vy);
             cyrcle1.vx = cyrcle2.vx = vx;
             cyrcle1.vy = cyrcle2.vy = vy;
 
+
             cyrcle1.ChangeFigurePosition();
             cyrcle2.ChangeFigurePosition();
-
         }
 
     }
