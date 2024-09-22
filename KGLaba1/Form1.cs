@@ -59,7 +59,6 @@ namespace KGLaba1
                     if (service.countCrash == 1)
                     {
                         points = service.ChangeFigurePosition();
-                        service.cyrcleColor = Brushes.Red;
                     }
                     else
                     {
