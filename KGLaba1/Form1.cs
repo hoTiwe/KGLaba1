@@ -66,15 +66,26 @@ namespace KGLaba1
                     }
                 }
 
-                for (int i = 0; i < points.Length; i++)
-                {
-                    graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
-                }
-                
-                graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
+                //    for (int i = 0; i < points.Length; i++)
+                //    {
+                //        graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
+                //    }
+
+
+                //    graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
+                DrawCircle(service, Color.Azure, points);
             }
         }
 
+        private void DrawCircle(CyrcleService s, Color color, CustomPoint[] points)
+        {
+            for (int i = 0; i < points.Length; i++)
+            {
+                graphics.DrawRectangle(new Pen(s.cyrcleColor), points[i].x, points[i].y, 1, 1);
+            }
+
+            graphics.FillEllipse(new SolidBrush(color), s.center.x - s.radius, s.center.y - s.radius, s.radius * 2, s.radius * 2);
+        }
 
         private void InitializeComponent()
         {
