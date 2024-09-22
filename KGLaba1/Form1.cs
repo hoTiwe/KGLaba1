@@ -60,6 +60,8 @@ namespace KGLaba1
 
             while (!service1.InForm(points1)) { 
                 points1 = service1.ChangeFigurePosition();
+                Console.WriteLine("New");
+
             }
             /*
             while (!service2.InForm(points2))
@@ -70,6 +72,7 @@ namespace KGLaba1
             for (int i = 0; i < points1.Length; i++)
             {
                 graphics.DrawRectangle(new Pen(service1.cyrcleColor), (int)points1[i].x, (int) points1[i].y, 1, 1);
+                
             }
             /*
             for (int i = 0; i < points2.Length; i++)
@@ -148,20 +151,14 @@ namespace KGLaba1
         private void ChangeCenter()
         {
             // X = X0 + Vx*t
-            double gip = Math.Sqrt((int)N * (int)N + (int)M * (int)M);
-            double cos = Math.Abs( (float)(N / gip ));
+            double gip = Math.Sqrt(N * N + M * M);
+
+            double cos = Math.Abs( N / gip );
             Console.WriteLine("Vx " + speed * cos);
-           if (speed == speed * cos)
-            {
-                Console.WriteLine(M + " N " + N + " g "+ gip);
-                throw new Exception("dddd");
-            }
-            center.x += (int) ( coefX* speed * cos);
+           
+            center.x += (int) Math.Round( coefX * speed * cos, 0);
 
-            center.y += (int)((float) coefY * speed * (float)(M / gip));
-
-            // y = kx + b
-            //center.y = (int)(M - M * center.x / N);
+            center.y += (int)Math.Round( coefY * speed * M / gip, 0);
         }
 
         public CustomPoint[] ChangeFigurePosition()
@@ -172,10 +169,10 @@ namespace KGLaba1
             int x = 0, y = radius, gap = 0, delta = (2 - 2 * radius);
             while (y >= 0)
             {
-                points.Add(new CustomPoint((int)center.x + x, (int)center.y + y));
-                points.Add(new CustomPoint((int)center.x + x, (int)center.y - y));
-                points.Add(new CustomPoint((int)center.x - x, (int)center.y - y));
-                points.Add(new CustomPoint((int)center.x - x, (int)center.y + y));
+                points.Add(new CustomPoint(center.x + x, center.y + y));
+                points.Add(new CustomPoint(center.x + x, center.y - y));
+                points.Add(new CustomPoint(center.x - x, center.y - y));
+                points.Add(new CustomPoint(center.x - x, center.y + y));
 
                 gap = 2 * (delta + y) - 1;
                 if (delta < 0 && gap <= 0)
@@ -200,11 +197,19 @@ namespace KGLaba1
 
         public bool InForm(CustomPoint[] points)
         {
-            for (int i = 1; i < points.Length; i++)
+            for (int i = 0; i < points.Length; i++)
             {
                 if (points[i].x > width || points[i].x < 0 || points[i].y > height || points[i].y < 0)
                 {
+                    // Возвращаем старый центр
                     Random r = new Random();
+                    double gip = Math.Sqrt(N * N + M * M);
+
+                    double cos = Math.Abs(N / gip);
+
+                    center.x -= (int)Math.Round(coefX * speed * cos, 0);
+
+                    center.y -= (int)Math.Round(coefY * speed * M / gip, 0);
 
                     if (points[i].x >= width)
                     {
@@ -212,7 +217,8 @@ namespace KGLaba1
 
                         M = (int) r.Next(-1000, 1000);
                         while (M == 0) M = (int) r.Next(-1000, 1000);
-                        N = (float)((float) center.x / (1f - ((float)center.y / M)));
+
+                        N = (float)((float) center.x / (1f - (float)center.y / M));
                     }
                     if (points[i].x <= 0)
                     {
@@ -268,8 +274,8 @@ namespace KGLaba1
             int x, y;
             do
             {
-                x = random.Next(radius, (int)N);
-                y = (int)(M * (1f - (float)((float)x / (float)N)));
+                x = random.Next(radius, (int) N);
+                y = (int)(M - M * x / N);
 
             } while (y <= radius || y >= height - radius);
 
