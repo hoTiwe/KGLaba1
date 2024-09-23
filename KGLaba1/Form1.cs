@@ -45,30 +45,37 @@ namespace KGLaba1
             pictureBox1.Image = bitmap;
         }
 
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.W)
+            {
+                service.speed++;
+                Console.WriteLine("UP UP UP");
+            }
+            if (e.KeyCode == Keys.S)
+            {
+                service.speed--;
+            }
+        }
+
+
         private void CircleMove()
         {
-            if (service.countCrash < 2)
-            {
-                clearForm();
+            clearForm();
 
+            points = service.ChangeFigurePosition();
+
+            if (!service.InForm(points))
+            {   
                 points = service.ChangeFigurePosition();
-
-                if (!service.InForm(points))
-                {   if (service.countCrash == 2)
-                    {
-                        clearForm();
-                        return;
-                    }
-                    points = service.ChangeFigurePosition();
-                }
-
-                for (int i = 0; i < points.Length; i++)
-                {
-                    graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
-                }
-
-                graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
             }
+
+            for (int i = 0; i < points.Length; i++)
+            {
+                graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
+            }
+
+            graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
         }
 
         private void InitializeComponent()
@@ -96,6 +103,7 @@ namespace KGLaba1
             // 
             // Form1
             // 
+            KeyDown += Form1_KeyDown;
             BackColor = Color.White;
             ClientSize = new Size(984, 461);
             Controls.Add(pictureBox1);
@@ -103,6 +111,7 @@ namespace KGLaba1
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
         }
+
     }
 
     class CyrcleService
@@ -116,7 +125,7 @@ namespace KGLaba1
         public CustomPoint center;
         public int radius;
 
-        private int speed = 3;
+        public int speed = 3;
         private int vx = 1;
         private int vy = 1;
 
@@ -142,6 +151,7 @@ namespace KGLaba1
 
         private void ChangeCenter()
         {
+            CalculateSpeed();
             center.x += vx;
             center.y += vy;
         }
@@ -231,7 +241,6 @@ namespace KGLaba1
 
                         M = (float)(center.y / (1f - ((float)center.x / N)));
                     }
-                    CalculateSpeed();
 
                     countCrash += 1;
                     return false;
