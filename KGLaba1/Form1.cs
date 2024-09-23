@@ -12,13 +12,16 @@ namespace KGLaba1
         Bitmap bitmap;
 
         CustomPoint[] points = [];
-        CyrcleService service;
+        List<CyrcleService> services = [];
+
+        int currentService = 0;
 
         public Form1()
         {
             InitializeComponent();
 
-            service = new CyrcleService(pictureBox1.Width, pictureBox1.Height);
+            services.Add( new CyrcleService(1, pictureBox1.Width, pictureBox1.Height));
+            services.Add( new CyrcleService(2, pictureBox1.Width, pictureBox1.Height));
 
             timer1.Start();
 
@@ -47,14 +50,27 @@ namespace KGLaba1
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.W)
+            List<Keys> number = new List<Keys> { Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9 };
+            if (number.Contains(e.KeyCode))
             {
-                service.speed++;
-                Console.WriteLine("UP UP UP");
+                currentService *= 10;
+                currentService += number.IndexOf(e.KeyCode);
             }
-            if (e.KeyCode == Keys.S)
-            {
-                service.speed--;
+            else {
+                if (services.FindIndex(x => x.id == currentService) == -1)
+                {
+                    currentService = 0;
+                    return;
+                }
+                if (e.KeyCode == Keys.W)
+                {
+                    services.First(x => x.id == currentService).speed++;
+                    Console.WriteLine("UP UP UP");
+                }
+                if (e.KeyCode == Keys.S)
+                {
+                    services.First(x => x.id == currentService).speed--;
+                }
             }
         }
 
@@ -63,19 +79,21 @@ namespace KGLaba1
         {
             clearForm();
 
-            points = service.ChangeFigurePosition();
+            for (int i = 0; i < services.Count(); i++) {
+                points = services[i].ChangeFigurePosition();
 
-            if (!service.InForm(points))
-            {   
-                points = service.ChangeFigurePosition();
+                if (!services[i].InForm(points))
+                {
+                    points = services[i].ChangeFigurePosition();
+                }
+
+                for (int j = 0; j < points.Length; j++)
+                {
+                    graphics.DrawRectangle(new Pen(services[i].cyrcleColor), points[j].x, points[j].y, 1, 1);
+                }
+
+                graphics.FillEllipse(new SolidBrush(Color.White), services[i].center.x - services[i].radius, services[i].center.y - services[i].radius, services[i].radius * 2, services[i].radius * 2);
             }
-
-            for (int i = 0; i < points.Length; i++)
-            {
-                graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
-            }
-
-            graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
         }
 
         private void InitializeComponent()
@@ -116,6 +134,7 @@ namespace KGLaba1
 
     class CyrcleService
     {
+        public int id;
         private int width;
         private int height;
 
@@ -138,8 +157,9 @@ namespace KGLaba1
         public Brush cyrcleColor = Brushes.Green;
         public int countCrash = 0;
 
-        public CyrcleService(int width, int height)
+        public CyrcleService(int id, int width, int height)
         {
+            this.id = id;
             this.width = width;
             this.height = height;
 
@@ -251,10 +271,11 @@ namespace KGLaba1
 
         public void GenerateCyrcle()
         {
-            radius = random.Next(10, 100);
+            radius = random.Next(10, 60);
 
             int x, y;
-            x = random.Next(radius, (int)N);
+
+            x = random.Next(radius+3, (int)N);
             y = (int)(M - M * x / N);
 
             CalculateSpeed();
