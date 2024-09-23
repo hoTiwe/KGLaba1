@@ -14,14 +14,14 @@ namespace KGLaba1
         CustomPoint[] points = [];
         List<CyrcleService> services = [];
 
-        int currentService = 0;
+        CyrcleService currentService = null;
 
         public Form1()
         {
             InitializeComponent();
 
-            services.Add( new CyrcleService(1, pictureBox1.Width, pictureBox1.Height));
-            services.Add( new CyrcleService(2, pictureBox1.Width, pictureBox1.Height));
+            services.Add( new CyrcleService(pictureBox1.Width, pictureBox1.Height));
+            services.Add( new CyrcleService(pictureBox1.Width, pictureBox1.Height));
 
             timer1.Start();
 
@@ -50,26 +50,31 @@ namespace KGLaba1
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            List<Keys> number = new List<Keys> { Keys.D0, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9 };
-            if (number.Contains(e.KeyCode))
+            if (currentService == null) return;
+
+            if (e.KeyCode == Keys.W)
             {
-                currentService *= 10;
-                currentService += number.IndexOf(e.KeyCode);
+                currentService.speed++;
+                Console.WriteLine("UP UP UP");
             }
-            else {
-                if (services.FindIndex(x => x.id == currentService) == -1)
+            if (e.KeyCode == Keys.S)
+            {
+                currentService.speed--;
+            }
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            MouseEventArgs mouse = (MouseEventArgs) e;
+            Console.WriteLine("Click on " + mouse.X + " " + mouse.Y);
+            for (int i = 0; i < services.Count(); i++)
+            {
+                int distance = (mouse.X - services[i].center.x) * (mouse.X - services[i].center.x) + (mouse.Y - services[i].center.y) * (mouse.Y - services[i].center.y);
+                if (distance <= services[i].radius * services[i].radius)
                 {
-                    currentService = 0;
-                    return;
-                }
-                if (e.KeyCode == Keys.W)
-                {
-                    services.First(x => x.id == currentService).speed++;
-                    Console.WriteLine("UP UP UP");
-                }
-                if (e.KeyCode == Keys.S)
-                {
-                    services.First(x => x.id == currentService).speed--;
+                    Console.WriteLine("Distance " + distance + " " + services[i].radius * services[i].radius);
+
+                    currentService = services[i];
                 }
             }
         }
@@ -112,6 +117,7 @@ namespace KGLaba1
             pictureBox1.Size = new Size(983, 454);
             pictureBox1.TabIndex = 2;
             pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
             // 
             // timer1
             // 
@@ -120,7 +126,7 @@ namespace KGLaba1
             timer1.Tick += timerStart_Tick;
             // 
             // Form1
-            // 
+            //
             KeyDown += Form1_KeyDown;
             BackColor = Color.White;
             ClientSize = new Size(984, 461);
@@ -134,7 +140,6 @@ namespace KGLaba1
 
     class CyrcleService
     {
-        public int id;
         private int width;
         private int height;
 
@@ -157,9 +162,8 @@ namespace KGLaba1
         public Brush cyrcleColor = Brushes.Green;
         public int countCrash = 0;
 
-        public CyrcleService(int id, int width, int height)
+        public CyrcleService(int width, int height)
         {
-            this.id = id;
             this.width = width;
             this.height = height;
 
