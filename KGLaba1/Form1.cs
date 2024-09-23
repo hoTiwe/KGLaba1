@@ -262,7 +262,7 @@ namespace KGLaba1
             x = random.Next(radius, (int)N);
             y = (int)(M - M * x / N);
 
-            CalculateSpeed();
+            CalculateSpeed();   
             center = new CustomPoint(x, y);
         }
         
@@ -293,14 +293,40 @@ namespace KGLaba1
             return false;
         }
 
+        public void changeSpeed(int speed)
+        {
+            double diagonal = Math.Sqrt(N * N + M * M); // Гипотинуза
+
+            double cosinus = Math.Abs(N) / diagonal;
+
+            double sinus = Math.Abs(M) / diagonal;
+
+            vx = (int)Math.Round(speed * cosinus, 0);
+            vy = (int)Math.Round(speed * sinus, 0);
+        }
+
         public static void ActionCrash(CyrcleService cyrcle1, CyrcleService cyrcle2)
         {
-            int vx = (cyrcle1.vx * cyrcle1.radius + cyrcle2.vx * cyrcle2.radius) / (cyrcle2.radius + cyrcle1.radius);
-            int vy = (cyrcle1.vy * cyrcle1.radius + cyrcle2.vy * cyrcle2.radius) / (cyrcle2.radius + cyrcle1.radius);
+            int vx1 = cyrcle1.vx;
+            int vy1 = cyrcle1.vy;
+            int vx2 = cyrcle2.vx;
+            int vy2 = cyrcle2.vy;
 
-            cyrcle1.vx = cyrcle2.vx = vx;
-            cyrcle1.vy = cyrcle2.vy = vy;
+            int r1 = cyrcle1.radius;
+            int r2 = cyrcle2.radius;
 
+            float totalRadius = r1 + r2;
+            
+            float newVx1 = ((r1 - r2) * vx1 + 2 * r2 * vx2) / totalRadius;
+            float newVy1 = ((r1 - r2) * vy1 + 2 * r2 * vy2) / totalRadius;
+
+            float newVx2 = ((r2 - r1) * vx2 + 2 * r1 * vx1) / totalRadius;
+            float newVy2 = ((r2 - r1) * vy2 + 2 * r1 * vy1) / totalRadius;
+
+            cyrcle1.vx = (int)newVx1;
+            cyrcle1.vy = (int)newVy1;
+            cyrcle2.vx = (int)newVx2;
+            cyrcle2.vy = (int)newVy2;
 
             cyrcle1.ChangeFigurePosition();
             cyrcle2.ChangeFigurePosition();
