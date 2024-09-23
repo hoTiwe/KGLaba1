@@ -120,7 +120,7 @@ namespace KGLaba1
         public CustomPoint center;
         public int radius;
 
-        private int speed = 8;
+        private int speed = 2;
         private int vx = 1;
         private int vy = 1;
 
@@ -147,7 +147,7 @@ namespace KGLaba1
         private void ChangeCenter()
         {
             sled.Insert(0, new CustomPoint(center.x, center.y));
-            if (sled.Count() == 5) sled.RemoveAt(4); 
+            if (sled.Count() == 4) sled.RemoveAt(3); 
             center.x += vx;
             center.y += vy;
         }
