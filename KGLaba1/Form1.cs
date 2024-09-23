@@ -1,6 +1,7 @@
 ﻿using System.CodeDom.Compiler;
 using System.Drawing;
 using System.Runtime.ConstrainedExecution;
+using System.Security.Cryptography.X509Certificates;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
@@ -11,14 +12,17 @@ namespace KGLaba1
         Graphics graphics;
         Bitmap bitmap;
 
-        CustomPoint[] points = [];
-        CyrcleService service;
+        CustomPoint[] points1 = [];
+
+        CyrcleService service1;
+
+        float secondPassed = 0;
 
         public Form1()
         {
             InitializeComponent();
 
-            service = new CyrcleService(pictureBox1.Width, pictureBox1.Height);
+            service1 = new CyrcleService(pictureBox1.Width, pictureBox1.Height);
 
             timer1.Start();
 
@@ -43,36 +47,31 @@ namespace KGLaba1
         {
             CircleMove();
             pictureBox1.Image = bitmap;
+            service1.spendTime += 1;
         }
 
         private void CircleMove()
         {
-            if (service.countCrash < 2)
+            clearForm();
+
+            points1 = service1.ChangeFigurePosition();
+
+            while (!service1.InForm(points1))
             {
-                clearForm();
+                points1 = service1.ChangeFigurePosition();
+                secondPassed = 0;
+                Console.WriteLine("New");
 
-                points = service.ChangeFigurePosition();
-
-                if (!service.InForm(points))
-                {
-                    if (service.countCrash == 1)
-                    {
-                        points = service.ChangeFigurePosition();
-                    }
-                    else
-                    {
-                        clearForm();
-                        return;
-                    }
-                }
-
-                for (int i = 0; i < points.Length; i++)
-                {
-                    graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
-                }
-                
-                graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
             }
+
+            for (int i = 0; i < points1.Length; i++)
+            {
+                graphics.DrawRectangle(new Pen(service1.cyrcleColor), (int)points1[i].x, (int)points1[i].y, 1, 1);
+
+            }
+
+            graphics.FillEllipse(new SolidBrush(Color.White), service1.center.x - service1.radius, service1.center.y - service1.radius, service1.radius * 2, service1.radius * 2);
+
         }
 
 
@@ -96,7 +95,7 @@ namespace KGLaba1
             // timer1
             // 
             timer1.Enabled = true;
-            timer1.Interval = 10;
+            timer1.Interval = 50;
             timer1.Tick += timerStart_Tick;
             // 
             // Form1
@@ -118,7 +117,14 @@ namespace KGLaba1
         public CustomPoint center;
         public int radius;
 
-        private int stepX = 1;
+        private int speed = 5;
+        private int coefX = 1;
+        private int coefY = -1;
+
+        private int gravity = 8;
+        public int spendTime = 0;
+        private int startSpeed = 0;
+
 
         private float N;
         private float M;
@@ -133,7 +139,7 @@ namespace KGLaba1
 
             Random r = new Random();
             N = r.Next(100, width - 100);
-            M = r.Next(100, height - 100);
+            M = 333;
 
             GenerateCyrcle();
         }
@@ -141,10 +147,18 @@ namespace KGLaba1
         private void ChangeCenter()
         {
             // X = X0 + Vx*t
-            center.x += stepX;
+            //double gip = Math.Sqrt(N * N + M * M);
 
-            // y = kx + b
-            center.y = (int)(M - M * center.x / N);
+            //double cos = Math.Abs( N / gip );
+            //Console.WriteLine("Vx " + speed * cos);
+
+            //center.x += (int)Math.Round(coefX * speed * cos, 0);
+            //center.y += (int)Math.Round( coefY * speed * M / gip, 0);
+
+            center.y -= startSpeed * spendTime;
+            center.y += ((int)(0.5 * gravity) * (spendTime * spendTime));
+
+
         }
 
         public CustomPoint[] ChangeFigurePosition()
@@ -180,46 +194,80 @@ namespace KGLaba1
 
             return points.ToArray();
         }
-        public int getCenter()
-        {
-            return this.radius;
-        }
+
         public bool InForm(CustomPoint[] points)
         {
-            for (int i = 1; i < points.Length; i++)
+            for (int i = 0; i < points.Length; i++)
             {
                 if (points[i].x > width || points[i].x < 0 || points[i].y > height || points[i].y < 0)
                 {
+                    // Возвращаем старый центр
                     Random r = new Random();
+                    double gip = Math.Sqrt(N * N + M * M);
+
+                    double cos = Math.Abs(N / gip);
+
+                    //center.x -= (int)Math.Round(coefX * speed * cos, 0);
+
+                    //center.y -= (int)Math.Round(coefY * speed * M / gip, 0);
 
                     if (points[i].x >= width)
                     {
-                        stepX *= -1;
+                        coefX *= -1;
 
-                        M = r.Next(-1000, 1000);
-                        N = (float)(center.x / (1f - ((float)center.y / M)));
+                        M = (int)r.Next(-1000, 1000);
+                        while (M == 0) M = (int)r.Next(-1000, 1000);
+
+                        N = (float)((float)center.x / (1f - (float)center.y / M));
                     }
                     if (points[i].x <= 0)
                     {
-                        stepX *= -1;
-                        N = r.Next(-1500, 1500);
+                        coefX *= -1;
+                        N = (int)r.Next(-1500, 1500);
+                        while (N == 0) N = (int)r.Next(-1500, 1500);
+
                         M = (float)(center.y / (1f - ((float)center.x / N)));
                     }
                     if (points[i].y <= 0)
                     {
-                        M = r.Next(-1000, 1000);
-                        N = (float)(center.x / (1f - ((float)center.y / M)));
-                        stepX = M <= 0 ? Math.Abs(stepX) : -Math.Abs(stepX);
+
+                        M = (int)r.Next(-1000, 1000);
+                        while (M == 0) M = (int)r.Next(-1000, 1000);
+
+                        N = (float)((float)center.x / (1f - ((float)center.y / M)));
                     }
                     if (points[i].y >= height)
                     {
-                        N = r.Next(-1500, 1500);
-                        M = (float)(center.y / (1f - ((float)center.x / N)));
-                        if (N >= center.x) stepX = Math.Abs(stepX);
-                        else stepX = -Math.Abs(stepX);
+                        center.y = height - radius;
+                        N = (int)r.Next(-1500, 1500);
+                        while (N == 0) N = (int)r.Next(-1500, 1500);
+
+                        Console.WriteLine("X " + center.x + " Y: " + center.y);
+                        Console.WriteLine("N " + N);
+
+                        M = (float)(center.y / (1f - (center.x / N)));
+                        Console.WriteLine("M " + M);
+                        if (startSpeed == 0)
+                        {
+                            startSpeed = (int)((float)spendTime * (float)gravity * 0.5f);
+                        }
+                        else
+                        {
+                            startSpeed = (int)((float)startSpeed * 0.8f);
+                        }
+                        if (spendTime == 0)
+                        {
+                            startSpeed = 0;
+                        }
+                        spendTime = 0;
                     }
 
-                    Console.WriteLine("N " + N + " M " + M + " step " + stepX);
+                    Console.WriteLine("N " + N + " M " + M + " step " + speed);
+                    if (M == float.NaN && N == float.NaN)
+                    {
+                        Console.WriteLine("X " + center.x + " Y: " + center.y);
+                        throw new Exception("ffff");
+                    }
                     countCrash += 1;
                     return false;
                 }
@@ -238,7 +286,7 @@ namespace KGLaba1
             do
             {
                 x = random.Next(radius, (int)N);
-                y = (int)(M * (1f - (float)((float)x / (float)N)));
+                y = (int)(M - M * x / N);
 
             } while (y <= radius || y >= height - radius);
 
