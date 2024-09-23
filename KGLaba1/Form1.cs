@@ -62,21 +62,17 @@ namespace KGLaba1
 
                 if (isCrash)
                 {
-                    if (! wasCrash) CyrcleService.ActionCrash(services[0], services[1]);
-                    isCrash = CyrcleService.isCrash(services[0], services[1]);
+                    services[i].center.x -= services[i].vx;
+                    services[i].center.y -= services[i].vy;
 
-                    wasCrash = isCrash;
-                }
-                else
-                {
-                    wasCrash = false;
+                    CyrcleService.ActionCrash(services[0], services[1]);
+
                 }
 
 
                 for (int j = 0; j < points.Length; j++)
                 {
                     graphics.DrawRectangle(new Pen(services[i].cyrcleColor), (int)points[j].x, (int)points[j].y, 1, 1);
-
                 }
 
                 graphics.FillEllipse(new SolidBrush(Color.White), services[i].center.x - services[i].radius, services[i].center.y - services[i].radius, services[i].radius * 2, services[i].radius * 2);
@@ -129,8 +125,8 @@ namespace KGLaba1
         public int radius;
 
         private int speed = 3;
-        private int vx = 1;
-        private int vy = 1;
+        public int vx = 1;
+        public int vy = 1;
 
         private int signX = 1;
         private int signY = 1;
@@ -261,8 +257,7 @@ namespace KGLaba1
 
         public void GenerateCyrcle()
         {
-            radius = random.Next(10, 100);
-
+            radius = random.Next(10, 50);
             int x, y;
             x = random.Next(radius, (int)N);
             y = (int)(M - M * x / N);
@@ -286,42 +281,30 @@ namespace KGLaba1
         public static bool isCrash(CyrcleService cyrcle1, CyrcleService cyrcle2)
         {
             List<CustomPoint> points1 = [.. cyrcle1.GetFillPoints()];
-            List<CustomPoint> points2 = [.. cyrcle2.GetFillPoints()];
 
             for (int i =0; i < points1.Count(); i++)
             {
-                if (points2.FindIndex(0, points2.Count(), x => x.x == points1[i].x && x.y == points1[i].y) != -1) {
-                    return true;
-                }
+                int deltaX = points1[i].x - cyrcle2.center.x; // Расстояния по x между центром 2 окражности и краем
+                int deltaY = points1[i].y - cyrcle2.center.y; // Расстояния по y между центром 2 окражности и краем
+                int distance = deltaX * deltaX + deltaY * deltaY; // Квадрат расстояния между центром 2 окружности и точкой
+
+                if (distance <= cyrcle2.radius * cyrcle2.radius) return true;
             }
             return false;
         }
 
         public static void ActionCrash(CyrcleService cyrcle1, CyrcleService cyrcle2)
         {
-            double gip1 = Math.Sqrt(cyrcle1.N * cyrcle1.N + cyrcle1.M * cyrcle1.M);
-            double gip2 = Math.Sqrt(cyrcle2.N * cyrcle2.N + cyrcle2.M * cyrcle2.M);
+            int vx = (cyrcle1.vx * cyrcle1.radius + cyrcle2.vx * cyrcle2.radius) / (cyrcle2.radius + cyrcle1.radius);
+            int vy = (cyrcle1.vy * cyrcle1.radius + cyrcle2.vy * cyrcle2.radius) / (cyrcle2.radius + cyrcle1.radius);
 
-            double cos1 = Math.Abs(cyrcle1.N / gip1);
-            double cos2 = Math.Abs(cyrcle2.N / gip2);
-
-            double vx1 = Math.Round(cyrcle1.coefX * cyrcle1.speed * cos1, 0);
-            double vy1 = Math.Round(cyrcle1.coefY * cyrcle1.speed * cyrcle1.M / gip1, 0);
-
-            double vx2 = Math.Round(cyrcle2.coefX * cyrcle2.speed * cos2, 0);
-            double vy2 = Math.Round(cyrcle2.coefY * cyrcle2.speed * cyrcle2.M / gip2, 0);
-
-            double vx = (vx1*cyrcle1.radius + vx2*cyrcle2.radius) / (cyrcle1.radius + cyrcle2.radius);
-            double vy = (vy1 * cyrcle1.radius + vy2 * cyrcle2.radius) / (cyrcle1.radius + cyrcle2.radius);
-            cyrcle1.speed = cyrcle2.speed = (int) Math.Sqrt(vx * vx + vy * vy);
-
-            Console.Write("Vx " + vx + " VY " + vy);
             cyrcle1.vx = cyrcle2.vx = vx;
             cyrcle1.vy = cyrcle2.vy = vy;
 
 
             cyrcle1.ChangeFigurePosition();
             cyrcle2.ChangeFigurePosition();
+            Console.WriteLine("Crashhhh");
         }
 
     }
