@@ -1,6 +1,8 @@
-﻿using System.CodeDom.Compiler;
+﻿using System;
+using System.CodeDom.Compiler;
 using System.Drawing;
 using System.Runtime.ConstrainedExecution;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
@@ -60,10 +62,9 @@ namespace KGLaba1
                 {
                     graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
                 }
-                
+
                 graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
         }
-
 
         private void InitializeComponent()
         {
@@ -104,13 +105,20 @@ namespace KGLaba1
         private int width;
         private int height;
 
+        private float N;
+        private float M;
+
         public CustomPoint center;
         public int radius;
 
-        private int stepX = 1;
+        private int speed = 3;
 
-        private float N;
-        private float M;
+        private int signX = 1;
+        private int signY = 1;
+        private int countTik = 0;
+
+        Random random = new Random();
+
 
         public Brush cyrcleColor = Brushes.Green;
         public int countCrash = 0;
@@ -120,22 +128,25 @@ namespace KGLaba1
             this.width = width;
             this.height = height;
 
-            Random r = new Random();
+            N = random.Next(100, width - 100);
+            M = random.Next(100, height - 100);
+
+
             GenerateCyrcle();
         }
 
-        private void ChangeCenter()
-        {
-            center.x += stepX;
-
-            center.y = height / 2 +  (int)(Math.Sin(4* center.x * Math.PI / 180) * height / 4 );
-
+        private void ChangeCenter() {
+            countTik++;
+            
+            center.x += speed * signX;
+            center.y = height / 2 + (int) (Math.Sin(center.x * Math.PI / 180) * height/4);
+            Console.WriteLine("Center: " + center.x + " " + center.y);
         }
 
         public CustomPoint[] ChangeFigurePosition()
         {
             ChangeCenter();
-            List<CustomPoint> points = new List<CustomPoint>(); // один элемент в списке - центр круга
+            List<CustomPoint> points = []; // один элемент в списке - центр круга
 
             int x = 0, y = radius, gap = 0, delta = (2 - 2 * radius);
             while (y >= 0)
@@ -163,52 +174,40 @@ namespace KGLaba1
                 y--;
             }
 
-            return points.ToArray();
+            return [.. points];
         }
-        
+
+
         public bool InForm(CustomPoint[] points)
         {
-            for (int i = 1; i < points.Length; i++)
+            for (int i = 0; i < points.Length; i++)
             {
-                if (points[i].x > width || points[i].x < 0 || points[i].y > height || points[i].y < 0)
+                if (points[i].x >= width || points[i].x <= 0 || points[i].y >= height || points[i].y <= 0)
                 {
-                    Random r = new Random();
+                    //center.x -= vx;
+                    //center.y -= vy;
 
-                    if (points[i].x >= width)
-                    {
-                        stepX *= -1;
-
-                        M = r.Next(-1000, 1000);
-                        N = (float)(center.x / (1f - ((float)center.y / M)));
-                    }
-                    if (points[i].x <= 0)
-                    {
-                        stepX *= -1;
-                        N = r.Next(-1500, 1500);
-                        M = (float)(center.y / (1f - ((float)center.x / N)));
-                    }
+                    if (points[i].x >= width) signX = -1;
+                    if (points[i].x <= 0) signX = 1;
+                    
                     return false;
                 }
-
             }
-
             return true;
         }
 
         public void GenerateCyrcle()
         {
-            Random random = new Random();
             radius = random.Next(10, 100);
-
-            int x, y;
-           
-            x = radius + 3;
-            y = height/ 2 + (int)(Math.Sin(x * Math.PI / 90) * height / 4);
+                      
+            int x = radius + 3;
+            int y = height/ 2;
 
             center = new CustomPoint(x, y);
         }
-
     }
+
+
     class CustomPoint
     {
         public int x, y;
