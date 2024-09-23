@@ -317,10 +317,10 @@ namespace KGLaba1
 
             float totalRadius = r1 + r2;
             
-            float newVx1 = ((r1 - r2) * vx1 + 2 * r2 * vx2) / totalRadius;
-            float newVy1 = ((r1 - r2) * vy1 + 2 * r2 * vy2) / totalRadius;
+            float newVx1 = ((r1 - r2) * vx1 + 2 * r2 * vx2) /totalRadius;
+            float newVy1 = ((r1 - r2) * vy1 + 2 * r2 * vy2) /totalRadius;
 
-            float newVx2 = ((r2 - r1) * vx2 + 2 * r1 * vx1) / totalRadius;
+            float newVx2 = ((r2 - r1)* vx2 + 2 * r1 * vx1) / totalRadius;
             float newVy2 = ((r2 - r1) * vy2 + 2 * r1 * vy1) / totalRadius;
 
             cyrcle1.vx = (int)newVx1;
