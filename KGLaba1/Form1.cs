@@ -249,7 +249,7 @@ namespace KGLaba1
             x = random.Next(radius, (int)N);
             y = (int)(M - M * x / N);
 
-            
+            CalculateSpeed();
             center = new CustomPoint(x, y);
         }
         
