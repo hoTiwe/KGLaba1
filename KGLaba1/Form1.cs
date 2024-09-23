@@ -123,19 +123,21 @@ namespace KGLaba1
         private int width;
         private int height;
 
-        public CustomPoint center;
-        public int radius;
-
-        private int speed = 5;
-        public int coefX = 1;
-        private int coefY = 1;
-
-
         private float N;
         private float M;
 
-        public double vx = 0;
-        public double vy = 0;
+        public CustomPoint center;
+        public int radius;
+
+        private int speed = 3;
+        private int vx = 1;
+        private int vy = 1;
+
+        private int signX = 1;
+        private int signY = 1;
+
+        Random random = new Random();
+
 
         public Brush cyrcleColor = Brushes.Green;
         public int countCrash = 0;
@@ -146,22 +148,16 @@ namespace KGLaba1
             this.height = height;
             this.speed = speed;
 
-            Random r = new Random();
-            N = r.Next(100, width - 100);
-            M = r.Next(100, height - 100);
+            N = random.Next(100, width - 100);
+            M = random.Next(100, height - 100);
 
             GenerateCyrcle();
         }
 
         private void ChangeCenter()
         {
-            // X = X0 + Vx*t
-            //double gip = Math.Sqrt(N * N + M * M);
-
-            //double cos = Math.Abs( N / gip );
-
-            center.x += (int)Math.Round(vx, 0);//(int) Math.Round( coefX * speed * cos, 0);
-            center.y += (int)Math.Round(vy, 0);//(int)Math.Round( coefY * speed * M / gip, 0);
+            center.x += vx;
+            center.y += vy;
         }
 
         public CustomPoint[] ChangeFigurePosition()
@@ -201,93 +197,91 @@ namespace KGLaba1
                 delta += 2 * (x - y);
                 y--;
             }
-            return points.ToArray();
+
+            return [.. points];
         }
 
         public bool InForm(CustomPoint[] points)
         {
             for (int i = 0; i < points.Length; i++)
             {
-                if (points[i].x > width || points[i].x < 0 || points[i].y > height || points[i].y < 0)
+                if (points[i].x >= width || points[i].x <= 0 || points[i].y >= height || points[i].y <= 0)
                 {
-                    // Возвращаем старый центр
-                    Random r = new Random();
-                    double gip = Math.Sqrt(N * N + M * M);
-                    double cos = Math.Abs(N / gip);
-
-                    center.x -= (int)Math.Round(coefX * speed * cos, 0);
-                    center.y -= (int)Math.Round(coefY * speed * M / gip, 0);
+                    center.x -= vx;
+                    center.y -= vy;
 
                     if (points[i].x >= width)
                     {
-                        coefX *= -1;
+                        signX *= -1;
 
-                        M = (int) r.Next(-1000, 1000);
-                        while (M == 0) M = (int) r.Next(-1000, 1000);
+                        do{
+                            M = random.Next(-1000, 1000);
+                        } while(Math.Abs(M) <= radius );
 
-                        N = (float)((float) center.x / (1f - (float)center.y / M));
+                        N = (float)(center.x / (1f - ((float)center.y / M)));
                     }
                     if (points[i].x <= 0)
                     {
-                        coefX *= -1;
-                        N = (int) r.Next(-1500, 1500);
-                        while(N == 0) N = (int) r.Next(-1500, 1500);
+                        signX *= -1;
+
+                        do
+                        {
+                            N = random.Next(-1500, 1500);
+                        } while (Math.Abs(N) <= radius);
 
                         M = (float)(center.y / (1f - ((float)center.x / N)));
                     }
                     if (points[i].y <= 0)
                     {
-                        coefY *= -1;
+                        signY *= -1;
 
-                        M = (int) r.Next(-1000, 1000);
-                        while (M == 0) M = (int) r.Next(-1000, 1000);
+                        do{
+                            M = random.Next(-1000, 1000);
+                        } while (Math.Abs(M) <= radius);
 
-                        N = (float)((float)center.x / (1f - ((float)center.y / M)));
+                        N = (float)(center.x / (1f - ((float)center.y / M)));
                     }
                     if (points[i].y >= height)
                     {
-                        N = (int) r.Next(-1500, 1500);
-                        while (N == 0) N = (int) r.Next(-1500, 1500);
+                        signY *= -1;
 
-                        M = (float)(center.y / (1f - (center.x / N)));
-                        coefY *= -1;
+                        do{
+                            N = random.Next(-1500, 1500);
+                        } while (Math.Abs(N) <= radius);
+
+                        M = (float)(center.y / (1f - ((float)center.x / N)));
                     }
-
-                    gip = Math.Sqrt(N * N + M * M);
-                    cos = Math.Abs( N / gip );
-
-                    vx = coefX * speed * cos;
-                    vy = coefY * speed * M / gip;
+                    CalculateSpeed();
 
                     countCrash += 1;
                     return false;
                 }
-
             }
-
             return true;
         }
 
         public void GenerateCyrcle()
         {
-            Random random = new Random();
             radius = random.Next(10, 100);
 
             int x, y;
-            do
-            {
-                x = random.Next(radius, (int) N);
-                y = (int)(M - M * x / N);
+            x = random.Next(radius, (int)N);
+            y = (int)(M - M * x / N);
 
-            } while (y <= radius || y >= height - radius);
-
-            double gip = Math.Sqrt(N * N + M * M);
-            double cos = Math.Abs(N / gip);
-
-            vx = coefX * speed * cos;
-            vy = coefY * speed * M / gip;
-
+            
             center = new CustomPoint(x, y);
+        }
+        
+        private void CalculateSpeed()
+        {
+            double diagonal = Math.Sqrt(N * N + M * M); // Гипотинуза
+
+            double cosinus = Math.Abs(N) / diagonal;
+
+            double sinus = Math.Abs(M) / diagonal;
+
+            vx = (int) Math.Round(signX * speed * cosinus, 0);
+            vy = (int) Math.Round(signY * speed * sinus, 0);
         }
 
         public static bool isCrash(CyrcleService cyrcle1, CyrcleService cyrcle2)
@@ -332,6 +326,8 @@ namespace KGLaba1
         }
 
     }
+
+
     class CustomPoint
     {
         public int x, y;
