@@ -137,7 +137,7 @@ namespace KGLaba1
 
         private void ChangeCenter() {
             countTik++;
-            
+
             center.x += speed * signX;
             center.y = height / 2 + (int) (Math.Sin(center.x * Math.PI / 180) * height/4);
             Console.WriteLine("Center: " + center.x + " " + center.y);
