@@ -116,7 +116,7 @@ namespace KGLaba1
         public CustomPoint center;
         public int radius;
 
-        private int speed = 3;
+        private int speed = -3;
         private int vx = 1;
         private int vy = 1;
 
@@ -134,8 +134,8 @@ namespace KGLaba1
             this.width = width;
             this.height = height;
 
-            N = random.Next(100, width - 100);
-            M = random.Next(100, height - 100);
+            N = 300;//random.Next(100, width - 100);
+            M = 300;//random.Next(100, height - 100);
 
             GenerateCyrcle();
         }
@@ -245,7 +245,7 @@ namespace KGLaba1
             radius = random.Next(10, 100);
 
             int x, y;
-            x = random.Next(radius, (int)N);
+            x = 150; // random.Next(radius, (int)N);
             y = (int)(M - M * x / N);
 
             CalculateSpeed();
