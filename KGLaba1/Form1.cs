@@ -146,20 +146,11 @@ namespace KGLaba1
 
         private void ChangeCenter()
         {
-            // X = X0 + Vx*t
-            double gip = Math.Sqrt(N * N + M * M);
-
-            double cos = Math.Abs( N / gip );
-            //Console.WriteLine("Vx " + speed * cos);
-
-            //center.x += (int)Math.Round(coefX * speed * cos, 0);
-            //center.y += (int)Math.Round( coefY * speed * M / gip, 0);
-
-            //center.y += startSpeed * spendTime;
-            //center.y += ((int)(0.5 * gravity) * (spendTime * spendTime));
-            startSpeed += gravity;
-            center.y += startSpeed;
-
+            if(spendTime != 0)
+            {
+                startSpeed += gravity;
+                center.y += startSpeed;
+            }
         }
 
         public CustomPoint[] ChangeFigurePosition()
@@ -200,59 +191,21 @@ namespace KGLaba1
         {
             for (int i = 0; i < points.Length; i++)
             {
-                if (points[i].x > width || points[i].x < 0 || points[i].y > height || points[i].y < 0)
+                if (points[i].y > height)
                 {
-                    // Возвращаем старый центр
-                    Random r = new Random();
-                    double gip = Math.Sqrt(N * N + M * M);
-
-                    double cos = Math.Abs(N / gip);
-
-                    //center.x -= (int)Math.Round(coefX * speed * cos, 0);
-
-                    //center.y -= (int)Math.Round(coefY * speed * M / gip, 0);
-
-                    if (points[i].x >= width)
-                    {
-                        coefX *= -1;
-
-                        M = (int)r.Next(-1000, 1000);
-                        while (M == 0) M = (int)r.Next(-1000, 1000);
-
-                        N = (float)((float)center.x / (1f - (float)center.y / M));
-                    }
-                    if (points[i].x <= 0)
-                    {
-                        coefX *= -1;
-                        N = (int)r.Next(-1500, 1500);
-                        while (N == 0) N = (int)r.Next(-1500, 1500);
-
-                        M = (float)(center.y / (1f - ((float)center.x / N)));
-                    }
-                    if (points[i].y <= 0)
-                    {
-
-                        M = (int)r.Next(-1000, 1000);
-                        while (M == 0) M = (int)r.Next(-1000, 1000);
-
-                        N = (float)((float)center.x / (1f - ((float)center.y / M)));
-                    }
                     if (points[i].y >= height)
                     {
-                        center.y = height - radius - 5;
-                        N = (int)r.Next(-1500, 1500);
-                        while (N == 0) N = (int)r.Next(-1500, 1500);
-
-                        Console.WriteLine("X " + center.x + " Y: " + center.y);
-                        Console.WriteLine("N " + N);
-
-                        M = (float)(center.y / (1f - (center.x / N)));
+                        center.y = height - radius - 1;
                         Console.WriteLine("M " + M);
                         if (spendTime == 0)
                         {
                             startSpeed = 0;
                         }
                         startSpeed = (int)((float)startSpeed * 0.8f)*-1;
+                        if (startSpeed <= 5 && startSpeed >= -5)
+                        {
+                            startSpeed = 0;
+                        }
                         spendTime = 0;
                     }
                     return false;
@@ -269,12 +222,8 @@ namespace KGLaba1
             radius = random.Next(10, 100);
 
             int x, y;
-            do
-            {
-                x = random.Next(radius, (int)N);
-                //y = (int)(M - M * x / N);
-                y = 50;
-            } while (y <= radius || y >= height - radius);
+            x = random.Next(radius, width);
+            y = random.Next(radius, height / 2);
 
             center = new CustomPoint(x, y);
         }
