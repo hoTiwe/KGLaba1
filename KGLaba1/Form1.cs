@@ -11,6 +11,7 @@ namespace KGLaba1
         Graphics graphics;
         Bitmap bitmap;
 
+        Bitmap backgroundImage;
         CustomPoint[] points = [];
         CyrcleService service;
 
@@ -18,16 +19,33 @@ namespace KGLaba1
         {
             InitializeComponent();
 
+            LoadDefaultBackground();
+
             service = new CyrcleService(pictureBox1.Width, pictureBox1.Height);
 
-            timer1.Start();
+            //timer1.Start();
 
         }
 
         private void clearForm()
         {
+            graphics.DrawImage(backgroundImage, 0, 0, pictureBox1.Width, pictureBox1.Height);
 
-            graphics.FillRectangle(Brushes.Tan, 0, 0, pictureBox1.Width, pictureBox1.Height);
+        }
+
+        private void LoadDefaultBackground()
+        {
+            string defaultPath = @"D:\GitHub\OtherProjects\ComputerGrafika\KGLaba1\KGLaba1\laba1.jpg";
+            
+            try
+            {
+                backgroundImage = new Bitmap(defaultPath);
+                pictureBox1.Image = backgroundImage;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось загрузить фон: {ex.Message}");
+            }
         }
 
         protected override void OnPaint(PaintEventArgs e)
