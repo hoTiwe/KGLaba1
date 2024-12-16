@@ -13,14 +13,18 @@ namespace KGLaba1
 
         CustomPoint[] points = [];
         CyrcleService service;
+        private bool isMenuActive = false;
 
         public Form1()
         {
             InitializeComponent();
 
             service = new CyrcleService(pictureBox1.Width, pictureBox1.Height);
-
             timer1.Start();
+
+            pictureBox1.MouseClick += Form1_MouseClick;
+
+            this.KeyDown += OnKeyDown;
 
         }
 
@@ -41,11 +45,86 @@ namespace KGLaba1
 
         private void timerStart_Tick(object sender, EventArgs e)
         {
+            if (isMenuActive) return;
             CircleMove();
             pictureBox1.Image = bitmap;
         }
 
-        private void CircleMove()
+        private void DrawMenu()
+        {
+            clearForm();
+
+            // Отрисовка заголовка меню
+            graphics.DrawString("Меню", new Font("Arial", 24, FontStyle.Bold), Brushes.Black, 400, 100);
+
+            // Отрисовка кнопок
+            DrawButton("Продолжить", new Rectangle(400, 200, 200, 50), Brushes.LightGreen);
+            DrawButton("Перезапустить", new Rectangle(400, 300, 200, 50), Brushes.LightBlue);
+            DrawButton("Выход", new Rectangle(400, 400, 200, 50), Brushes.LightCoral);
+
+            pictureBox1.Image = bitmap;
+        }
+
+        private void DrawButton(string text, Rectangle rect, Brush color)
+        {
+            graphics.FillRectangle(color, rect);
+            graphics.DrawRectangle(Pens.Black, rect);
+            graphics.DrawString(text, new Font("Arial", 14), Brushes.Black, rect.X + 10, rect.Y + 10);
+        }
+
+        private void Form1_MouseClick(object sender, MouseEventArgs e)
+        {
+            Console.WriteLine("Start method");
+            if (!isMenuActive) return;
+
+            Point clickPoint = e.Location;
+            Console.WriteLine("CLick");
+            // Проверка нажатия на кнопки
+            if (new Rectangle(400, 200, 200, 50).Contains(clickPoint)) // "Продолжить"
+            {
+                Console.WriteLine("Button Продолжить");
+                isMenuActive = false; // Выход из меню
+            }
+            else if (new Rectangle(400, 300, 200, 50).Contains(clickPoint)) // "Перезапустить"
+            {
+                Console.WriteLine("Button Перезапустить");
+                isMenuActive = false;
+                RestartApplication();
+            }
+            else if (new Rectangle(400, 400, 200, 50).Contains(clickPoint)) // "Выход"
+            {
+                Console.WriteLine("Button Выход");
+                Application.Exit();
+            }
+        }
+        private void RestartApplication()
+        {
+            service = new CyrcleService(pictureBox1.Width, pictureBox1.Height);
+            clearForm();
+        }
+
+        private void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                isMenuActive = true;
+                DrawMenu();
+   
+            }
+        }
+
+            //protected override void OnKeyDown(KeyEventArgs e)
+            //{
+            //    base.OnKeyDown(e);
+            //    if (e.KeyCode == Keys.Escape) // По нажатию Esc открываем меню
+            //    {
+            //        isMenuActive = true;
+            //        DrawMenu();
+            //    }
+            //}
+
+
+            private void CircleMove()
         {
             if (service.countCrash < 2)
             {
@@ -65,14 +144,6 @@ namespace KGLaba1
                         return;
                     }
                 }
-
-                //    for (int i = 0; i < points.Length; i++)
-                //    {
-                //        graphics.DrawRectangle(new Pen(service.cyrcleColor), points[i].x, points[i].y, 1, 1);
-                //    }
-
-
-                //    graphics.FillEllipse(new SolidBrush(Color.White), service.center.x - service.radius, service.center.y - service.radius, service.radius * 2, service.radius * 2);
                 DrawCircle(service, Color.Azure, points);
             }
         }
