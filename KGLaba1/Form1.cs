@@ -54,10 +54,8 @@ namespace KGLaba1
         {
             clearForm();
 
-            // Отрисовка заголовка меню
             graphics.DrawString("Меню", new Font("Arial", 24, FontStyle.Bold), Brushes.Black, 400, 100);
 
-            // Отрисовка кнопок
             DrawButton("Продолжить", new Rectangle(400, 200, 200, 50), Brushes.LightGreen);
             DrawButton("Перезапустить", new Rectangle(400, 300, 200, 50), Brushes.LightBlue);
             DrawButton("Выход", new Rectangle(400, 400, 200, 50), Brushes.LightCoral);
@@ -79,11 +77,11 @@ namespace KGLaba1
 
             Point clickPoint = e.Location;
             Console.WriteLine("CLick");
-            // Проверка нажатия на кнопки
+
             if (new Rectangle(400, 200, 200, 50).Contains(clickPoint)) // "Продолжить"
             {
                 Console.WriteLine("Button Продолжить");
-                isMenuActive = false; // Выход из меню
+                isMenuActive = false; 
             }
             else if (new Rectangle(400, 300, 200, 50).Contains(clickPoint)) // "Перезапустить"
             {
